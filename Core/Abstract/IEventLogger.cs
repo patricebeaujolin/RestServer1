@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RestServer1.Domain;
-using RestServer1.Domain.Enum;
-using RestServer1.Domain.Model;
+using RestServer1.DAL.Enum;
+using RestServer1.DAL.Model;
  
 namespace RestServer1.Core.Abstract
 {
-    public interface ILogger
+    public interface IEventLogger
     {
-        void SetSettings(ServiceSettings serviceSettings);
-
-        void Start();
-
         Task AddEventAsync(LoggerEvent loggerEvent);
 
         Task<LoggerEvent> GetEventAsync(Guid id);
@@ -20,5 +15,12 @@ namespace RestServer1.Core.Abstract
         Task<IEnumerable<LoggerEvent>> GetEventsAsync(DateTime? start, DateTime? end, LoggerEventLevel? level);
 
         Task<IEnumerable<LoggerEvent>> GetAllEventsAsync();
+
+        Task<bool> FlushAllAsync();
+
+        Task<bool> SeedAsync();
+
+        Task<bool> ResetAsync();
     }
 }
+ 

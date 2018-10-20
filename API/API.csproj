@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <ReleaseVersion>1.0</ReleaseVersion>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,5 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="appsettings.cs" />
+    <Compile Remove="Modules\ProgramModules.cs" />
   </ItemGroup>
 </Project>

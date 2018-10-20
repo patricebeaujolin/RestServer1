@@ -1,5 +1,5 @@
 ﻿using System;
-namespace RestServer1.Domain.Enum
+namespace RestServer1.DAL.Enum
 {
     public enum LoggerEventLevel
     {

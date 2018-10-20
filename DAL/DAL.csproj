@@ -7,12 +7,17 @@
 
   <ItemGroup>
     <Folder Include="Abstract\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <Folder Include="Model\" />
+    <Folder Include="Enum\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Model\LoggerEventLevel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 </Project>

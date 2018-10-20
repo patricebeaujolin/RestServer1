@@ -6,8 +6,8 @@ using System.Globalization;
 using System.Threading.Tasks;
 using RestServer1.DAL.Abstract;
 using RestServer1.Domain;
-using RestServer1.Domain.Model;
-using RestServer1.Domain.Enum;
+using RestServer1.DAL.Model;
+using RestServer1.DAL.Enum;
 
 using log4net;
 
@@ -28,27 +28,19 @@ namespace RestServer1.DAL
                 new LoggerEvent(DateTime.ParseExact("2018-10-17 16:26", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), "RestServer1.Core", "FakeLoggerData", LoggerEventLevel.ERROR, 2, "this is my trace message 7 !"),
             };
 
-        static readonly ConcurrentDictionary<Guid, LoggerEvent> events = new ConcurrentDictionary<Guid, LoggerEvent>();
+        static readonly ConcurrentDictionary<string, LoggerEvent> events = new ConcurrentDictionary<string, LoggerEvent>();
 
         public FakeLoggerData()
         {
             log.Debug("constructor");
 
-            events.Clear();
-            foreach (var e in list) { events.TryAdd(e.Id, e); }
-        }
-
-        public void SetSettings(ServiceSettings serviceSettings)
-        {
-        }
-
-        public void Start()
-        {
+            this.DeleteAllAsync().RunSynchronously();
+            this.SeedAsync().RunSynchronously();
         }
 
         public Task CreateAsync(LoggerEvent loggerEvent)
         {
-            log.Debug("Create: ");
+            log.Debug("CreateAsync: ");
 
             events.TryAdd(loggerEvent.Id, loggerEvent);
 
@@ -57,9 +49,9 @@ namespace RestServer1.DAL
 
         public Task<LoggerEvent> ReadByIdAsync(Guid id)
         {
-            log.Debug("ReadById: " + id);
+            log.Debug("ReadByIdAsync: " + id);
 
-            if (events.TryGetValue(id, out LoggerEvent val))
+            if (events.TryGetValue(id.ToString(), out LoggerEvent val))
                 return Task.FromResult(val);
 
             throw new KeyNotFoundException("The event was not found !");
@@ -67,7 +59,7 @@ namespace RestServer1.DAL
 
         public Task<IEnumerable<LoggerEvent>> ReadByTimeAndLevelAsync(DateTime? start, DateTime? end, LoggerEventLevel? level)
         {
-            log.Debug("ReadByTimeAndLevel: "
+            log.Debug("ReadByTimeAndLevelAsync: "
                       + (start.HasValue ? start.Value.ToString(CultureInfo.InvariantCulture) : "") + ", "
                       + (end.HasValue ? end.Value.ToString(CultureInfo.InvariantCulture) : "") + ", "
                       + (level.HasValue ? level.Value.ToString() : ""));
@@ -80,10 +72,27 @@ namespace RestServer1.DAL
 
         public Task<IEnumerable<LoggerEvent>> ReadAsync()
         {
-            log.Debug("Read");
+            log.Debug("ReadAsync");
 
             return Task.FromResult<IEnumerable<LoggerEvent>>(events.Values);
         }
 
+        public Task DeleteAllAsync()
+        {
+            log.Debug("DeleteAllAsync: ");
+
+            events.Clear();
+
+            return Task.CompletedTask;
+        }
+
+        public Task SeedAsync()
+        {
+            log.Debug("SeedAsync: ");
+
+            foreach (var e in list) { events.TryAdd(e.Id, e); }
+
+            return Task.CompletedTask;
+        }
     }
 }

@@ -6,10 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Model\" />
-    <Folder Include="Enum\" />
+    <Folder Include="Abstract\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Class1.cs" />
+    <Compile Remove="Enum\LoggerEventLevel.cs" />
+    <Compile Remove="Model\LoggerEvent.cs" />
   </ItemGroup>
 </Project>
