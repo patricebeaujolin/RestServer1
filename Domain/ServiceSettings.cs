@@ -3,13 +3,9 @@ using RestServer1.Domain.Abstract;
 
 namespace RestServer1.Domain
 {
-    public class ServiceSettings : IServiceSettings
+    public class ServiceSettings
     {
-        public string MongoConnectionString { get; set; }
-        public string MongoDatabase { get; set; }
-        public string MongoCollection { get; set; }
-        public bool MongoResetEvents { get; set; }
-
-        public ServiceSettings GetServiceSettings() => this;
+        public string DataImplementation { get; set; }
+        public string OnStartup { get; set; }
     }
 }

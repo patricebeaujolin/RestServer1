@@ -14,14 +14,14 @@ namespace RestServer1.API.Controllers
     [ApiController]
     public class LogsController : ControllerBase
     {
-        static readonly NotImplementedException notImplementedException = new NotImplementedException("This REST method is not implemented.");
-        static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly NotImplementedException notImplementedException = new NotImplementedException("This REST method is not implemented.");
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        readonly IEventLogger logger;
+        private readonly IEventLogger logger;
 
         public LogsController(IEventLogger loggerInstance)
         {
-            log.Debug("Logs controller created.");
+            log.Info("Logs controller created.");
                 
             this.logger = loggerInstance;
         }
@@ -31,42 +31,41 @@ namespace RestServer1.API.Controllers
         //----------------------------------------------------------
         // GET api/logs
         [HttpGet]
-        public ActionResult<IEnumerable<LoggerEvent>> Get()
+        public async Task<IEnumerable<LoggerEvent>> Get()
         {
-            return new ActionResult<IEnumerable<LoggerEvent>>(logger.GetAllEventsAsync().Result);
+            return await this.logger.GetAllEventsAsync();
         }
 
         // GET api/logs/1b45c80f-21f6-4569-8500-636efd1e0c02
         [HttpGet("{id:guid}")]
-        public ActionResult<LoggerEvent> Get(string id)
+        public async Task<LoggerEvent> Get(string id)
         {
             var guid = Guid.Parse(id);
-            return new ActionResult<LoggerEvent>(logger.GetEventAsync(guid).Result);
+            return await this.logger.GetEventAsync(guid);
         }
 
         // POST api/values
         [HttpPost]
-        public ActionResult<bool> Post([FromBody] LoggerEvent value)
+        public async Task<LoggerEvent> Post([FromBody] LoggerEvent value)
         {
-            value.Id = new Guid().ToString();
-            value.CreateTime = DateTime.UtcNow;
-
-            return new ActionResult<bool>(logger.AddEventAsync(value).Result);
+            return await this.logger.AddEventAsync(value);
         }
 
-        // PUT api/values/5
+        /*
+        // PUT api/values/1b45c80f-21f6-4569-8500-636efd1e0c02
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public Task<LoggerEvent> Put(string id, [FromBody] string value)
         {
-            throw notImplementedException;
         }
+        */
 
-        // DELETE api/values/5
+        /*
+        // DELETE api/values/1b45c80f-21f6-4569-8500-636efd1e0c02
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public Task<LoggerEvent> Delete(string id)
         {
-            throw notImplementedException;
         }
+        */
 
         //----------------------------------------------------------
         // SEARCH
@@ -79,7 +78,7 @@ namespace RestServer1.API.Controllers
         [HttpGet("search/{level:int}")]
         [HttpGet("search/{start:datetime}/{level:int?}")]
         [HttpGet("search/{start:datetime}/{end:datetime}/{level:int?}")]
-        public ActionResult<IEnumerable<LoggerEvent>> SearchGet(string start, string end, string level)
+        public async Task<IEnumerable<LoggerEvent>> SearchGet(string start, string end, string level)
         {
             DateTime? startUtc = null;
             if (!string.IsNullOrEmpty(start)) 
@@ -93,7 +92,7 @@ namespace RestServer1.API.Controllers
             if (!string.IsNullOrEmpty(level)) 
                 logLevel = Enum.Parse<LoggerEventLevel>(level);
 
-            return new ActionResult<IEnumerable<LoggerEvent>>(logger.GetEventsAsync(startUtc, endUtc, logLevel).Result);
+            return await this.logger.GetEventsAsync(startUtc, endUtc, logLevel);
         }
 
         //----------------------------------------------------------
@@ -101,23 +100,26 @@ namespace RestServer1.API.Controllers
         //----------------------------------------------------------
         // GET api/admin/flush
         [HttpGet("admin/flush")]
-        public ActionResult<bool> AdminFlush()
+        public async Task<IEnumerable<LoggerEvent>> AdminFlush()
         {
-            return new ActionResult<bool>(logger.FlushAllAsync().Result);
-        }
+            await this.logger.FlushAsync();
+            return await this.logger.GetAllEventsAsync();
+        }   
 
         // GET api/admin/seed
         [HttpGet("admin/seed")]
-        public ActionResult<bool> AdminSeed()
+        public async Task<IEnumerable<LoggerEvent>> AdminSeed()
         {
-            return new ActionResult<bool>(logger.SeedAsync().Result);
+            await this.logger.SeedAsync();
+            return await this.logger.GetAllEventsAsync();
         }
 
         // GET api/admin/reset
-        [HttpGet("admin/reset")]
-        public ActionResult<bool> AdminReset()
+        [HttpGet("admin/reseed")]
+        public async Task<IEnumerable<LoggerEvent>> AdminReset()
         {
-            return new ActionResult<bool>(logger.ResetAsync().Result);
+            await this.logger.ReseedAsync();
+            return await this.logger.GetAllEventsAsync();
         }
     }
 }

@@ -12,6 +12,10 @@ using RestServer1.Domain;
 using RestServer1.Core.Abstract;
 using RestServer1.Core;
 using RestServer1.DAL;
+using System.Linq.Expressions;
+using Microsoft.VisualBasic.CompilerServices;
+using log4net;
+using Microsoft.Extensions.Logging.Console;
 
 namespace RestServer1.API
 {
@@ -29,23 +33,31 @@ namespace RestServer1.API
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            // Initialize the ServiceSettings singleton
-            var serviceSettings = new ServiceSettings()
+            // Initialize the ApplicationSettings singleton
+            var applicationSettings = new ApplicationSettings()
             {
-                MongoConnectionString = this.Configuration.GetSection("MongoConnection:ConnectionString").Value,
-                MongoDatabase = this.Configuration.GetSection("MongoConnection:Database").Value,
-                MongoCollection = this.Configuration.GetSection("MongoConnection:Collection").Value,
-                MongoResetEvents = bool.Parse(this.Configuration.GetSection("MongoConnection:ResetEvents").Value)
+                Logger = new ServiceSettings()
+                {
+                    DataImplementation = this.Configuration.GetSection("Logger:DataImplementation").Value,
+                    OnStartup = this.Configuration.GetSection("Logger:OnStartup").Value
+                },
+
+                Mongo = new MongoSettings()
+                {
+                    ConnectionString = this.Configuration.GetSection("MongoConnection:ConnectionString").Value,
+                    Database = this.Configuration.GetSection("MongoConnection:Database").Value,
+                    Collection = this.Configuration.GetSection("MongoConnection:Collection").Value
+                }
             };
 
             // Bind specific services to be used with ASP.NET DI
-            services.AddSingleton<RestServer1.Domain.Abstract.IServiceSettings>(serviceSettings);
+            services.AddSingleton<RestServer1.Domain.Abstract.IApplicationSettings>(applicationSettings);
             services.AddSingleton<RestServer1.Core.Abstract.IEventLogger, EventLogger>();
 
-            switch (this.Configuration.GetSection("Startup:LoggerDataImplementation").Value)
+            switch (applicationSettings.Logger.DataImplementation)
             {
-                case "fake":
-                    services.AddSingleton<RestServer1.DAL.Abstract.ILoggerData, FakeLoggerData>();
+                case "memory":
+                    services.AddSingleton<RestServer1.DAL.Abstract.ILoggerData, MemoryLoggerData>();
                     break;
                 case "mongo":
                     services.AddSingleton<RestServer1.DAL.Abstract.ILoggerData, MongoDbLoggerData>();

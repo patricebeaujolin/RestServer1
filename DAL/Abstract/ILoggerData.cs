@@ -10,14 +10,14 @@ namespace RestServer1.DAL.Abstract
     {
         Task CreateAsync(LoggerEvent loggerEvent);
 
+        Task CreateAsync(IEnumerable<LoggerEvent> loggerEvents);
+
+        Task<IEnumerable<LoggerEvent>> ReadAsync(); 
+
         Task<LoggerEvent> ReadByIdAsync(Guid id);
 
         Task<IEnumerable<LoggerEvent>> ReadByTimeAndLevelAsync(DateTime? start, DateTime? end, LoggerEventLevel? level);
 
-        Task<IEnumerable<LoggerEvent>> ReadAsync();
-
         Task DeleteAllAsync();
-
-        Task SeedAsync();
     }
 }

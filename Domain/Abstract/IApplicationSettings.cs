@@ -3,8 +3,8 @@ using RestServer1.Domain;
 
 namespace RestServer1.Domain.Abstract
 {
-    public interface IServiceSettings
+    public interface IApplicationSettings
     {
-        ServiceSettings GetServiceSettings();
+        ApplicationSettings Settings { get; }
     }
 }

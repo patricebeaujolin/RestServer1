@@ -8,7 +8,7 @@ namespace RestServer1.Core.Abstract
 {
     public interface IEventLogger
     {
-        Task<bool> AddEventAsync(LoggerEvent loggerEvent);
+        Task<LoggerEvent> AddEventAsync(LoggerEvent loggerEvent);
 
         Task<LoggerEvent> GetEventAsync(Guid id);
 
@@ -16,11 +16,11 @@ namespace RestServer1.Core.Abstract
 
         Task<IEnumerable<LoggerEvent>> GetAllEventsAsync();
 
-        Task<bool> FlushAllAsync();
+        Task FlushAsync();
 
-        Task<bool> SeedAsync();
+        Task SeedAsync();
 
-        Task<bool> ResetAsync();
+        Task ReseedAsync();
     }
 }
  

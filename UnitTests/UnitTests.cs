@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnitTests
+namespace RestServer1.UnitTests
 {
     public class Class1
     {

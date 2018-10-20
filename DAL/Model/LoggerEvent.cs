@@ -5,9 +5,9 @@ namespace RestServer1.DAL.Model
 {
     public class LoggerEvent
     {
-        static readonly string separator = ", ";
-        static readonly string object_start = "{ ";
-        static readonly string object_end = " }";
+        private const string ToStringSeparator  = ", ";
+        private const string ToStringHeader     = "{";
+        private const string ToStringFooter     = "}";
 
         public LoggerEvent(DateTime eventTime,string nameSpace, string name, LoggerEventLevel level, int correlationId, string message)
         {
@@ -39,16 +39,16 @@ namespace RestServer1.DAL.Model
 
         public override string ToString()
         {
-            return  object_start
-                        + "GUID=" + this.Id + separator
-                        + "create_time=" + this.CreateTime + separator
-                        + "event_time=" + this.CreateTime + separator
-                        + "namespace=" + this.Namespace + separator
-                        + "name=" + this.Name + separator
-                        + "level=" + this.Level.ToString("G") + separator
-                        + "id=" + this.CorrelationId + separator
+            return  ToStringHeader
+                        + "GUID=" + this.Id + ToStringSeparator
+                        + "create_time=" + this.CreateTime + ToStringSeparator
+                        + "event_time=" + this.EventTime + ToStringSeparator
+                        + "namespace=" + this.Namespace + ToStringSeparator
+                        + "name=" + this.Name + ToStringSeparator
+                        + "level=" + this.Level.ToString("G") + ToStringSeparator
+                        + "id=" + this.CorrelationId + ToStringSeparator
                         + "message=" + this.Message +
-                    object_end;
+                    ToStringFooter;
         }
     }
 }

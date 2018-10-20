@@ -7,42 +7,58 @@ using RestServer1.DAL.Model;
 using RestServer1.DAL.Enum;
 using RestServer1.DAL.Abstract;
 using log4net;
+using RestServer1.Domain;
+using RestServer1.Domain.Abstract;
 
 namespace RestServer1.Core
 {
     public class EventLogger : IEventLogger
     {
-        static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        static readonly string separator = ", ";
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly string separator = ", ";
 
-        readonly ILoggerData loggerData;
+        private readonly ServiceSettings settings;
+        private readonly ILoggerData loggerData;
 
-        public EventLogger(ILoggerData loggerData)
+        public EventLogger(ILoggerData loggerData, IApplicationSettings applicationSettings)
         {
             this.loggerData = loggerData;
+            this.settings = applicationSettings.Settings.Logger;
+
+            switch (this.settings.OnStartup)
+            {
+                case "flush":
+                    this.FlushAsync().Wait();
+                    break;
+
+                case "seed":
+                    this.ReseedAsync().Wait();
+                    break;
+            }
         }
 
-        public async Task<bool> AddEventAsync(LoggerEvent loggerEvent)
+        // IEventLogger implementation
+        public async Task<LoggerEvent> AddEventAsync(LoggerEvent loggerEvent)
         {
             log.Debug("AddEventAsync: " + loggerEvent);
 
-            await loggerData.CreateAsync(loggerEvent);
+            await this.loggerData.CreateAsync(loggerEvent);
 
-            return true;
+            return loggerEvent;
         }
 
         public async Task<LoggerEvent> GetEventAsync(Guid id)
         {
             log.Debug("GetEventAsync: " + id);
 
-            return await loggerData.ReadByIdAsync(id);
+            return await this.loggerData.ReadByIdAsync(id);
         }
 
         public async Task<IEnumerable<LoggerEvent>> GetAllEventsAsync()
         {
             log.Debug("GetAllEventsAsync: ");
 
-            return await loggerData.ReadAsync();
+            return await this.loggerData.ReadAsync();
         }
 
         public async Task<IEnumerable<LoggerEvent>> GetEventsAsync(DateTime? start, DateTime? end, LoggerEventLevel? level)
@@ -51,36 +67,44 @@ namespace RestServer1.Core
                       + (end.HasValue ? end.Value.ToString(CultureInfo.InvariantCulture) : string.Empty) +separator
                       + (level.HasValue ? level.Value.ToString() : string.Empty));
 
-            return await loggerData.ReadByTimeAndLevelAsync(start, end, level);
+            return await this.loggerData.ReadByTimeAndLevelAsync(start, end, level);
         }
 
-        public async Task<bool> FlushAllAsync()
+        // Admin implementation
+        public async Task FlushAsync()
         {
-            log.Debug("GetAllEvents: ");
+            log.Debug("FlushAsync: ");
 
-            await loggerData.DeleteAllAsync();
-
-            return true;
+            await this.loggerData.DeleteAllAsync();
         }
 
-        public async Task<bool> SeedAsync()
+        public async Task SeedAsync()
         {
             log.Debug("SeedAsync: ");
 
-            await loggerData.DeleteAllAsync();
+            IEnumerable<LoggerEvent> seed  = new List<LoggerEvent>
+            {
+                new LoggerEvent(DateTime.ParseExact("2018-10-17 16:20", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), "RestServer1.Core", "Logger", LoggerEventLevel.INFO, 1, "this is my seed trace message 1 !"),
+                new LoggerEvent(DateTime.ParseExact("2018-10-17 16:21", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), "RestServer1.Core", "Logger", LoggerEventLevel.INFO, 2, "this is my seed trace message 2 !"),
+                new LoggerEvent(DateTime.ParseExact("2018-10-17 16:22", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), "RestServer1.Core", "Logger", LoggerEventLevel.DEBUG, 1, "this is my seed trace message 3 !"),
+                new LoggerEvent(DateTime.ParseExact("2018-10-17 16:23", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), "RestServer1.Core", "Logger", LoggerEventLevel.INFO, 2, "this is my seed trace message 4 !"),
+                new LoggerEvent(DateTime.ParseExact("2018-10-17 16:24", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), "RestServer1.Core", "Logger", LoggerEventLevel.ERROR, 1, "this is my seed trace message 5 !"),
+                new LoggerEvent(DateTime.ParseExact("2018-10-17 16:25", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), "RestServer1.Core", "Logger", LoggerEventLevel.WARN, 2, "this is my seed trace message 6 !"),
+                new LoggerEvent(DateTime.ParseExact("2018-10-17 16:26", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), "RestServer1.Core", "Logger", LoggerEventLevel.ERROR, 2, "this is my seed trace message 7 !"),
+            };
 
-            return true;
+
+        await this.loggerData.CreateAsync(seed);
+
         }
 
-        public async Task<bool> ResetAsync()
+        public async Task ReseedAsync()
         {
-            log.Debug("ResetAsync: ");
+            log.Debug("ReseedAsync: ");
 
-            await loggerData.DeleteAllAsync();
+            await this.FlushAsync();
 
-            await loggerData.SeedAsync();
-
-            return true;
+            await this.SeedAsync();
         }
     }
 }
