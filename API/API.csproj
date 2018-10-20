@@ -6,6 +6,12 @@
     <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <StartAction>Project</StartAction>
+    <LaunchUrl>http://localhost:5000/API/logs</LaunchUrl>
+    <ApplicationURL>http://localhost:5000</ApplicationURL>
+    <LaunchBrowser>false</LaunchBrowser>
+  </PropertyGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />
     <Folder Include="Modules\" />

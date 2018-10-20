@@ -22,11 +22,13 @@ namespace RestServer1.Core
             this.loggerData = loggerData;
         }
 
-        public async Task AddEventAsync(LoggerEvent loggerEvent)
+        public async Task<bool> AddEventAsync(LoggerEvent loggerEvent)
         {
-            log.Debug("AddEventAsync: " + loggerEvent.ToString());
+            log.Debug("AddEventAsync: " + loggerEvent);
 
             await loggerData.CreateAsync(loggerEvent);
+
+            return true;
         }
 
         public async Task<LoggerEvent> GetEventAsync(Guid id)
