@@ -26,6 +26,9 @@ namespace RestServer1.API.Controllers
             this.logger = loggerInstance;
         }
 
+        //----------------------------------------------------------
+        // RESTful
+        //----------------------------------------------------------
         // GET api/logs
         [HttpGet]
         public ActionResult<IEnumerable<LoggerEvent>> Get()
@@ -41,34 +44,14 @@ namespace RestServer1.API.Controllers
             return new ActionResult<LoggerEvent>(logger.GetEventAsync(guid).Result);
         }
 
-        // GET api/logs/2
-        // GET api/logs/2018-10-17T16:21
-        // GET api/logs/2018-10-17T16:21/2
-        // GET api/logs/2018-10-17T16:21/2018-10-17T16:24
-        // GET api/logs/2018-10-17T16:21/2018-10-17T16:24/2
-        [HttpGet("{level:int}")]
-        [HttpGet("{start:datetime}/{level:int?}")]
-        [HttpGet("{start:datetime}/{end:datetime}/{level:int?}")]
-        public ActionResult<IEnumerable<LoggerEvent>> Get(string start, string end, string level)
-        {
-            DateTime? startUtc = null;
-            if (!string.IsNullOrEmpty(start)) startUtc = DateTime.Parse(start);
-
-            DateTime? endUtc = null;
-            if (!string.IsNullOrEmpty(end)) endUtc = DateTime.Parse(end);
-
-            LoggerEventLevel? logLevel = null;
-            if (!string.IsNullOrEmpty(level)) logLevel = Enum.Parse<LoggerEventLevel>(level);
-
-            return new ActionResult<IEnumerable<LoggerEvent>>(logger.GetEventsAsync(startUtc, endUtc, logLevel).Result);
-        }
-
         // POST api/values
         [HttpPost]
-        public void Post([FromBody] LoggerEvent value)
+        public ActionResult<bool> Post([FromBody] LoggerEvent value)
         {
             value.Id = new Guid().ToString();
-            logger.AddEventAsync(value).RunSynchronously();
+            value.CreateTime = DateTime.UtcNow;
+
+            return new ActionResult<bool>(logger.AddEventAsync(value).Result);
         }
 
         // PUT api/values/5
@@ -85,6 +68,37 @@ namespace RestServer1.API.Controllers
             throw notImplementedException;
         }
 
+        //----------------------------------------------------------
+        // SEARCH
+        //----------------------------------------------------------
+        // GET api/logs/search/2
+        // GET api/logs/search/2018-10-17T16:21
+        // GET api/logs/search/2018-10-17T16:21/2
+        // GET api/logs/search/2018-10-17T16:21/2018-10-17T16:24
+        // GET api/logs/search/2018-10-17T16:21/2018-10-17T16:24/2
+        [HttpGet("search/{level:int}")]
+        [HttpGet("search/{start:datetime}/{level:int?}")]
+        [HttpGet("search/{start:datetime}/{end:datetime}/{level:int?}")]
+        public ActionResult<IEnumerable<LoggerEvent>> SearchGet(string start, string end, string level)
+        {
+            DateTime? startUtc = null;
+            if (!string.IsNullOrEmpty(start)) 
+                startUtc = DateTime.Parse(start);
+
+            DateTime? endUtc = null;
+            if (!string.IsNullOrEmpty(end)) 
+                endUtc = DateTime.Parse(end);
+
+            LoggerEventLevel? logLevel = null;
+            if (!string.IsNullOrEmpty(level)) 
+                logLevel = Enum.Parse<LoggerEventLevel>(level);
+
+            return new ActionResult<IEnumerable<LoggerEvent>>(logger.GetEventsAsync(startUtc, endUtc, logLevel).Result);
+        }
+
+        //----------------------------------------------------------
+        // ADMIN
+        //----------------------------------------------------------
         // GET api/admin/flush
         [HttpGet("admin/flush")]
         public ActionResult<bool> AdminFlush()
